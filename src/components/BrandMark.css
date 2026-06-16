@@ -1,0 +1,20 @@
+.brandmark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.brandmark--logo {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.brandmark--logo img {
+  width: 74%;
+  height: 74%;
+  object-fit: contain;
+  display: block;
+}
+.brandmark--icon {
+  color: var(--accent);
+  background: var(--accent-soft);
+}

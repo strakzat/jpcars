@@ -1,0 +1,245 @@
+.saved {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Shared screen header (also used by Settings) */
+.screen-top {
+  flex: none;
+  padding: 58px var(--gutter) 16px;
+  background: rgba(10, 10, 11, 0.86);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+  z-index: 5;
+}
+.screen-top__bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.screen-top__title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.screen-top__count {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.screen-top__new {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent);
+  padding: 8px 13px;
+  border-radius: 12px;
+}
+.screen-top__new:active {
+  transform: scale(0.97);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 0 14px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-3);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-size: 14.5px;
+}
+.search input::placeholder {
+  color: var(--text-3);
+}
+
+.saved__list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 16px var(--gutter) calc(var(--tabbar-h) + 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.saved__list::-webkit-scrollbar {
+  display: none;
+}
+
+.svcard {
+  padding: 16px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+}
+.svcard__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.svcard__id {
+  flex: 1;
+  min-width: 0;
+}
+.svcard__name {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.svcard__variant {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.svcard__date {
+  flex: none;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.svcard__specs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.svcard__specs .dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--text-3);
+}
+.svcard__plate {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.opts-pill {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 999px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.opts-pill.is-open {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+.opts-pill__chev {
+  transition: transform 0.24s var(--ease);
+}
+.opts-pill.is-open .opts-pill__chev {
+  transform: rotate(180deg);
+}
+
+.svcard__opts {
+  overflow: hidden;
+}
+.svcard__opts-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 12px;
+}
+.opt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.opt-chip svg {
+  color: var(--accent);
+}
+
+.svcard__prices {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.svcard__price-k {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.svcard__price-v {
+  display: block;
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+.svcard__price--gross .svcard__price-v {
+  color: var(--accent);
+}
+
+.svcard__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.svcard__note svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-3);
+}
+
+.saved__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--text-3);
+  text-align: center;
+}
+.saved__empty p {
+  font-size: 14px;
+}

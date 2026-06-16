@@ -1,0 +1,53 @@
+.statusbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54px;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 40;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.statusbar__time {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.2px;
+  margin-top: 4px;
+}
+
+.statusbar__right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.statusbar__battery {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.statusbar__battery-shell {
+  width: 24px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  padding: 1.5px;
+}
+.statusbar__battery-fill {
+  width: 78%;
+  height: 100%;
+  border-radius: 1.5px;
+  background: var(--text);
+}
+.statusbar__battery-cap {
+  width: 1.5px;
+  height: 4px;
+  border-radius: 0 1px 1px 0;
+  background: rgba(255, 255, 255, 0.45);
+}

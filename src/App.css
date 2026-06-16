@@ -1,0 +1,53 @@
+/* Studio stage — holds the prototype phone and, optionally, the current app */
+.stage {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 48px;
+}
+.stage__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.stage__cap {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 5px 14px;
+  border-radius: 999px;
+}
+.stage__cap--brand {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.stage__cap--muted {
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1px solid var(--line);
+}
+
+.device-stack {
+  position: relative;
+}
+.device-stack__overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.app {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.app__screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
