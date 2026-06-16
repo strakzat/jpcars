@@ -1,0 +1,47 @@
+:root {
+  /* Brand / accent — JP.cars green */
+  --accent: #3cd958;
+  --accent-2: #2bb84a;
+  --accent-ink: #04210d;
+  --accent-soft: rgba(60, 217, 88, 0.14);
+  --accent-glow: rgba(60, 217, 88, 0.35);
+
+  /* Surfaces — black / charcoal */
+  --bg: #0a0a0b;
+  --bg-2: #0f0f11;
+  --surface: #141416;
+  --surface-2: #1c1c20;
+  --surface-3: #26262b;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
+
+  /* Text — white / grey (kept close to white for readability on black) */
+  --text: #fcfcfd;
+  --text-2: #d6d7dd;
+  --text-3: #a6a7af;
+
+  /* Semantic */
+  --positive: #3cd958;
+  --negative: #ff6b5b;
+  --plate-yellow: #f2c100;
+  --plate-blue: #0a3aa3;
+
+  /* Radius */
+  --r-sm: 10px;
+  --r: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* Shadows (dark) */
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-raised: 0 16px 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-pressed: 0 2px 8px rgba(0, 0, 0, 0.4);
+
+  /* Layout */
+  --gutter: 20px;
+  --tabbar-h: 84px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}

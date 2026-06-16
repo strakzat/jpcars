@@ -1,0 +1,117 @@
+.device {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  /* Scale from the top so the device top stays pinned to the layout box. */
+  transform-origin: top center;
+  border-radius: 56px;
+  background: #050506;
+  padding: 12px;
+  box-shadow:
+    0 50px 100px rgba(0, 0, 0, 0.6),
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    inset 0 0 2px 2px rgba(255, 255, 255, 0.06);
+}
+
+/* Titanium-ish rim */
+.device::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 53px;
+  background: linear-gradient(145deg, #3a3a3d, #0b0b0d 40%, #0b0b0d 60%, #2c2c2f);
+  z-index: 0;
+}
+
+.device__screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 46px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.device__content {
+  position: absolute;
+  inset: 0;
+}
+
+/* Dynamic Island */
+.device__screen::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 122px;
+  height: 35px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 50;
+}
+
+.device__home-indicator {
+  position: absolute;
+  bottom: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 138px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* Side buttons */
+.device__buttons {
+  position: absolute;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.device__buttons--left {
+  left: -2px;
+  top: 130px;
+}
+.device__buttons--right {
+  right: -2px;
+  top: 180px;
+}
+.device__btn {
+  display: block;
+  width: 3px;
+  background: #1a1a1c;
+  border-radius: 2px;
+}
+.device__btn--silent {
+  height: 28px;
+}
+.device__btn--vol {
+  height: 56px;
+}
+.device__btn--power {
+  height: 84px;
+}
+
+@media (max-height: 900px) {
+  .device {
+    transform: scale(0.92);
+  }
+}
+@media (max-height: 820px) {
+  .device {
+    transform: scale(0.82);
+  }
+}
+
+/* On mobile prioritise width: scale the phone up so it nearly fills the screen.
+   Declared last so it wins over the height-based scales above. */
+@media (max-width: 760px) {
+  .device {
+    transform: scale(0.97);
+  }
+}
