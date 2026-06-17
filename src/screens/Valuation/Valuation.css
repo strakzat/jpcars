@@ -519,6 +519,49 @@
   color: var(--text-3);
 }
 
+/* Step 4: note */
+.note-field {
+  margin-top: 18px;
+}
+.note-field__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.note-field__label svg {
+  color: var(--text-3);
+}
+.note-field__opt {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.note-field__input {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.45;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.note-field__input::placeholder {
+  color: var(--text-3);
+}
+.note-field__input:focus {
+  border-color: var(--accent);
+}
+
 /* ── Sticky CTA footer ──────────────────────────────────────────────── */
 .val__cta {
   position: relative;

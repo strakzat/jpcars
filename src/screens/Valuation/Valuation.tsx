@@ -12,6 +12,7 @@ import {
   Plus,
   ChevronRight,
   ChevronDown,
+  StickyNote,
 } from 'lucide-react'
 import BrandMark from '../../components/BrandMark'
 import { useReview } from '../../review/ReviewContext'
@@ -78,6 +79,7 @@ export default function Valuation({
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [mileage, setMileage] = useState('')
   const [selected, setSelected] = useState<string[]>([])
+  const [note, setNote] = useState('')
   const [savedDone, setSavedDone] = useState(false)
   const [optsOpen, setOptsOpen] = useState(false)
 
@@ -95,6 +97,7 @@ export default function Valuation({
     setVehicle(null)
     setMileage('')
     setSelected([])
+    setNote('')
     setSavedDone(false)
     setStep(1)
     setDir(1)
@@ -138,6 +141,7 @@ export default function Valuation({
     setVehicle(null)
     setMileage('')
     setSelected([])
+    setNote('')
     setSavedDone(false)
     setOptsOpen(false)
     go(1)
@@ -158,6 +162,7 @@ export default function Valuation({
       gross: result.gross,
       date: todayLabel(),
       options: selected,
+      note: note.trim() || undefined,
     })
     setSavedDone(true)
     setTimeout(goToSaved, 650)
@@ -436,6 +441,21 @@ export default function Valuation({
                       )}
                     </AnimatePresence>
                   </div>
+                </div>
+
+                <div className="note-field">
+                  <label className="note-field__label" htmlFor="val-note">
+                    <StickyNote width={15} height={15} /> Note
+                    <span className="note-field__opt">optional</span>
+                  </label>
+                  <textarea
+                    id="val-note"
+                    className="note-field__input"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Condition, damage, asking price…"
+                    rows={3}
+                  />
                 </div>
               </div>
             )}
