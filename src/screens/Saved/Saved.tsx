@@ -54,7 +54,7 @@ export default function Saved({
           return (
             <article key={it.id} className="svcard">
               <div className="svcard__head">
-                <BrandMark make={it.make} size={44} />
+                <BrandMark make={it.make} model={it.model} size={44} />
                 <div className="svcard__id">
                   <span className="svcard__name">
                     {it.make} {it.model}
