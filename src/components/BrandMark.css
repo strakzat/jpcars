@@ -4,6 +4,16 @@
   place-items: center;
   overflow: hidden;
 }
+.brandmark--photo {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.brandmark--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .brandmark--logo {
   background: #fff;
   border: 1px solid var(--line);

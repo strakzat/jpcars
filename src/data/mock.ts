@@ -164,6 +164,20 @@ export const brandLogos: Record<string, string> = {
 export const brandLogo = (make: string): string | null =>
   brandLogos[make.trim().toUpperCase()] ?? null
 
+/**
+ * Representative model photos for the known demo cars, keyed by "MAKE MODEL".
+ * Prototype stand-in for a live photo service (e.g. imagin.studio keyed on
+ * make/model/year): unknown cars fall back to the brand logo via BrandMark.
+ */
+export const carPhotos: Record<string, string> = {
+  'MAZDA 3': '/cars/mazda-3.jpg',
+  'BMW 3 SERIES': '/cars/bmw-3.jpg',
+  'TOYOTA AYGO': '/cars/toyota-aygo.jpg',
+  'NISSAN MICRA': '/cars/nissan-micra.jpg',
+}
+export const carPhoto = (make: string, model: string): string | null =>
+  carPhotos[`${make} ${model}`.trim().toUpperCase()] ?? null
+
 export const eur = (n: number) =>
   '€ ' + n.toLocaleString('nl-NL', { maximumFractionDigits: 0 })
 

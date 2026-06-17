@@ -1,0 +1,34 @@
+.carphoto {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+}
+.carphoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Blend the varied photo backgrounds into the dark theme: a soft top sheen
+   and a stronger bottom fade so the car sits on the surface, not a hard edge. */
+.carphoto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(10, 10, 11, 0.18) 0%, rgba(10, 10, 11, 0) 24%),
+    linear-gradient(to top, rgba(10, 10, 11, 0.55) 0%, rgba(10, 10, 11, 0) 38%);
+  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: inherit;
+}
+
+/* Compact variant for the result reveal */
+.carphoto--sm {
+  aspect-ratio: 16 / 8;
+  border-radius: var(--r);
+}

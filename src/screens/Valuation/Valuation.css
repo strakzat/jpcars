@@ -163,6 +163,16 @@
 }
 
 /* ── Step 2: vehicle + mileage ──────────────────────────────────────── */
+.vcard-photo {
+  margin-top: 14px;
+}
+/* Photo above the vehicle card supplies the visual lead, so the card tucks up. */
+.vcard-photo + .vcard {
+  margin-top: 10px;
+}
+.reveal-photo {
+  margin-top: 4px;
+}
 .step__found {
   display: inline-flex;
   align-items: center;

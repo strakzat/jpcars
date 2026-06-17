@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import BrandMark from '../../components/BrandMark'
+import CarPhoto from '../../components/CarPhoto'
 import { useReview } from '../../review/ReviewContext'
 import {
   options as ALL_OPTIONS,
@@ -192,7 +193,7 @@ export default function Valuation({
             <div className="vhome__list">
               {recent.slice(0, 5).map((it) => (
                 <button key={it.id} className="recent" onClick={goToSaved}>
-                  <BrandMark make={it.make} size={40} />
+                  <BrandMark make={it.make} model={it.model} size={40} />
                   <span className="recent__info">
                     <span className="recent__name">
                       {it.make} {it.model}
@@ -295,6 +296,7 @@ export default function Valuation({
                 <span className="step__found">
                   <Check width={14} height={14} /> Vehicle found
                 </span>
+                <CarPhoto make={vehicle.make} model={vehicle.model} className="vcard-photo" />
                 <div className="vcard">
                   <BrandMark make={vehicle.make} size={50} />
                   <div className="vcard__info">
@@ -370,6 +372,11 @@ export default function Valuation({
             {/* ── Step 4 — Result / price reveal ─────────────────────── */}
             {step === 4 && vehicle && result && (
               <div className="step">
+                <CarPhoto
+                  make={vehicle.make}
+                  model={vehicle.model}
+                  className="carphoto--sm reveal-photo"
+                />
                 <div className="reveal">
                   <span className="reveal__ctx">
                     {vehicle.make} {vehicle.model}
