@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Plus,
   ChevronRight,
+  ChevronDown,
 } from 'lucide-react'
 import BrandMark from '../../components/BrandMark'
 import { useReview } from '../../review/ReviewContext'
@@ -78,6 +79,7 @@ export default function Valuation({
   const [mileage, setMileage] = useState('')
   const [selected, setSelected] = useState<string[]>([])
   const [savedDone, setSavedDone] = useState(false)
+  const [optsOpen, setOptsOpen] = useState(false)
 
   useEffect(() => {
     if (phase === 'home') setCurrentShot({ src: '/current/plate.png', label: 'Current — Valuation' })
@@ -137,6 +139,7 @@ export default function Valuation({
     setMileage('')
     setSelected([])
     setSavedDone(false)
+    setOptsOpen(false)
     go(1)
   }
 
@@ -394,21 +397,45 @@ export default function Valuation({
                       v={(result.mileageAdj >= 0 ? '+ ' : '− ') + eur(Math.abs(result.mileageAdj))}
                       tone={result.mileageAdj >= 0 ? 'pos' : 'neg'}
                     />
-                    <Row
-                      k={`Options (${selected.length})`}
-                      v={'+ ' + eur(result.optionsAdj)}
-                      tone="pos"
-                    />
+                    <button
+                      className={`rrow rrow--opts ${optsOpen ? 'is-open' : ''}`}
+                      onClick={() => setOptsOpen((o) => !o)}
+                      aria-expanded={optsOpen}
+                      disabled={selected.length === 0}
+                    >
+                      <span className="rrow__k rrow__k--opts">
+                        Options ({selected.length})
+                        {selected.length > 0 && (
+                          <ChevronDown width={15} height={15} className="rrow__chev" />
+                        )}
+                      </span>
+                      <span className="rrow__v rrow__v--pos">{'+ ' + eur(result.optionsAdj)}</span>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {optsOpen && selected.length > 0 && (
+                        <motion.div
+                          className="rrow__opts"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <div className="rrow__opts-inner">
+                            {selected.map((id) => {
+                              const o = optionById[id]
+                              if (!o) return null
+                              return (
+                                <span key={id} className="chip">
+                                  <o.Icon className="chip__icon" width={13} height={13} />
+                                  {o.label}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                </div>
-
-                <div className="chips">
-                  {selected.slice(0, 6).map((id) => (
-                    <span key={id} className="chip">
-                      {optionById[id]?.label}
-                    </span>
-                  ))}
-                  {selected.length > 6 && <span className="chip chip--more">+{selected.length - 6}</span>}
                 </div>
               </div>
             )}
