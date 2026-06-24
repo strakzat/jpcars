@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ChevronDown,
   StickyNote,
+  BarChart3,
 } from 'lucide-react'
 import BrandMark from '../../components/BrandMark'
 import CarPhoto from '../../components/CarPhoto'
@@ -24,8 +25,10 @@ import {
   calcValuation,
   eur,
   km as fmtKm,
+  benchmarkFor,
   type Vehicle,
   type SavedValuation,
+  type BenchmarkSubject,
 } from '../../data/mock'
 import './Valuation.css'
 
@@ -66,11 +69,13 @@ export default function Valuation({
   onSaved,
   goToSaved,
   onFlowChange,
+  openBenchmark,
 }: {
   recent: SavedValuation[]
   onSaved: (v: SavedValuation) => void
   goToSaved: () => void
   onFlowChange: (inFlow: boolean) => void
+  openBenchmark: (subject: BenchmarkSubject) => void
 }) {
   const { setCurrentShot } = useReview()
   const [phase, setPhase] = useState<'home' | 'flow'>('home')
@@ -136,6 +141,26 @@ export default function Valuation({
     if (!vehicle) return null
     return calcValuation(vehicle, mileageNum, selected)
   }, [vehicle, mileageNum, selected])
+
+  const benchSubject = useMemo<BenchmarkSubject | null>(() => {
+    if (!vehicle || !result) return null
+    return {
+      make: vehicle.make,
+      model: vehicle.model,
+      variant: vehicle.variant,
+      year: vehicle.year,
+      plate: vehicle.plate || '',
+      mileage: mileageNum ?? vehicle.expectedMileage,
+      options: selected,
+      price: result.price,
+      gross: result.gross,
+    }
+  }, [vehicle, result, mileageNum, selected])
+
+  const benchRank = useMemo(
+    () => (benchSubject ? benchmarkFor(benchSubject) : null),
+    [benchSubject],
+  )
 
   const reset = () => {
     setPlate('')
@@ -449,6 +474,25 @@ export default function Valuation({
                     </AnimatePresence>
                   </div>
                 </div>
+
+                <button
+                  className="bench-cta"
+                  onClick={() => benchSubject && openBenchmark(benchSubject)}
+                  disabled={!benchSubject}
+                >
+                  <span className="bench-cta__icon">
+                    <BarChart3 width={19} height={19} />
+                  </span>
+                  <span className="bench-cta__text">
+                    <span className="bench-cta__title">View benchmark</span>
+                    <span className="bench-cta__sub">
+                      {benchRank
+                        ? `Ranked #${benchRank.ourRank} of ${benchRank.total} comparable cars`
+                        : 'Compare against the live market'}
+                    </span>
+                  </span>
+                  <ChevronRight width={18} height={18} className="bench-cta__chev" />
+                </button>
 
                 <div className="note-field">
                   <label className="note-field__label" htmlFor="val-note">

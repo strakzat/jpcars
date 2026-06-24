@@ -1,0 +1,670 @@
+/* ── Overlay shell ──────────────────────────────────────────────────────── */
+.bench {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.bench__top {
+  flex: none;
+  padding: 58px var(--gutter) 14px;
+  background: rgba(10, 10, 11, 0.86);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+  z-index: 5;
+}
+.bench__bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+}
+.bench__title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+/* ── Navigator bar ──────────────────────────────────────────────────────── */
+.bench__nav {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 14px var(--gutter) 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.bench__nav:active {
+  background: var(--surface);
+}
+
+/* Identity row: your car + plate + rank */
+.bench__nav-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.bench__nav-you {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--text);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.bench__nav-plate {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.bench__nav-rank {
+  margin-left: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--accent);
+}
+.bench__nav-of {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.bench__nav-track {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+.bench__tick {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--text-3);
+  transform: translate(-50%, -50%);
+  opacity: 0.55;
+}
+.bench__tick.is-ours {
+  opacity: 0;
+}
+.bench__marker {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 2px solid var(--bg-2);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.bench__nav-ends {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.bench__nav-ends span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Stats row: ETR + margin */
+.bench__nav-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.bench__nav-stat b {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  color: var(--text);
+}
+.bench__nav-stat--accent {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--text-2);
+}
+.bench__nav-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--text-3);
+}
+
+/* ── List ───────────────────────────────────────────────────────────────── */
+.bench__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px var(--gutter) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+/* ── Row ────────────────────────────────────────────────────────────────── */
+.bench-row {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 13px 14px;
+  border-radius: var(--r);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.bench-row:active {
+  transform: scale(0.985);
+}
+.bench-row.is-ours {
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-raised);
+}
+.bench-row__you {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--text);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+/* Title — rank + vehicle name on top */
+.bench-row__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.bench-row__rank {
+  flex: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+.is-ours .bench-row__rank {
+  color: var(--text);
+}
+.bench-row__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Body — ETR badge anchors the left, stacked meta on the right */
+.bench-row__body {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 11px;
+}
+
+/* ETR badge — right-aligned in the card */
+.etr {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.etr__val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+}
+.etr__cap {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  opacity: 0.72;
+}
+.etr--5 {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.etr--4 {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.etr--3 {
+  background: var(--surface-3);
+  color: var(--text);
+}
+.etr--2 {
+  background: rgba(242, 193, 0, 0.16);
+  color: var(--plate-yellow);
+}
+.etr--1 {
+  background: rgba(255, 107, 91, 0.16);
+  color: var(--negative);
+}
+
+.bench-row__stack {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.bench-row__meta {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.bench-row__opts {
+  font-size: 12px;
+}
+
+/* APR — green confidence bar, full card width with the label above */
+.apr {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+.apr__track {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.is-ours .apr__track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.apr__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--text-2);
+}
+.apr__cap {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* Option diff — inline in the meta line */
+.diff {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+}
+.diff__pos {
+  color: var(--accent);
+}
+.diff__neg {
+  color: var(--negative);
+}
+.diff__cap {
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.diff--same {
+  color: var(--text-3);
+  font-weight: 500;
+  font-family: inherit;
+}
+
+/* Margin row — three columns, labels above values, margin on the right */
+.margin {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 13px;
+}
+.margin__col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.margin__col--accent {
+  align-items: flex-end;
+  text-align: right;
+}
+.margin__cap {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.margin__v {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+.margin__col--accent .margin__v {
+  color: var(--text);
+}
+
+/* ── Sheet (detail + legend) ────────────────────────────────────────────── */
+.sheet__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.5);
+}
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 41;
+  max-height: 86%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 10px var(--gutter) 24px;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-raised);
+}
+.sheet::-webkit-scrollbar {
+  display: none;
+}
+.sheet__handle {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 4px auto 16px;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+.sheet__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.sheet__photo {
+  flex: none;
+  width: 64px;
+  height: 46px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.sheet__id {
+  flex: 1;
+  min-width: 0;
+}
+.sheet__name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.sheet__you {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--accent-ink);
+  background: var(--accent);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.sheet__variant {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.sheet__rank {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Dealer */
+.dealer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+.dealer:active {
+  border-color: var(--line-strong);
+}
+.dealer__icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  background: var(--surface-3);
+}
+.dealer__info {
+  flex: 1;
+  min-width: 0;
+}
+.dealer__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dealer__web {
+  display: block;
+  margin-top: 1px;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.dealer__ext {
+  flex: none;
+  color: var(--text-3);
+}
+
+.mgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 18px;
+}
+.mtile {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 13px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.mtile__k {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+.mtile__v {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+.mtile__v--accent {
+  color: var(--accent);
+}
+.mtile__sub {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.optgroup {
+  margin-top: 18px;
+}
+.optgroup__h {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--text-2);
+}
+.optgroup__h--extra {
+  color: var(--accent);
+}
+.optgroup__h--missing {
+  color: var(--negative);
+}
+.optgroup__empty {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.optgroup__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.bchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+}
+.bchip svg {
+  flex: none;
+  color: var(--text-3);
+}
+.bchip--extra {
+  background: var(--accent-soft);
+  border-color: rgba(60, 217, 88, 0.22);
+  color: var(--accent);
+}
+.bchip--extra svg {
+  color: var(--accent);
+}
+.bchip--missing {
+  border-color: rgba(255, 107, 91, 0.24);
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 107, 91, 0.5);
+}
+
+.sheet__close {
+  margin-top: 22px;
+}
+
+/* ── Legend sheet ───────────────────────────────────────────────────────── */
+.legend__h {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+.legend__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+/* Fixed-width icon column so the ETR/APR titles line up */
+.legend__icon {
+  flex: none;
+  width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+.legend__etr {
+  width: 44px;
+  height: 44px;
+}
+.legend__track {
+  width: 100%;
+}
+.legend__icon .apr__cap {
+  color: var(--text-3);
+}
+.legend__k {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.legend__p {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}

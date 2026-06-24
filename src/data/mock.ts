@@ -133,7 +133,7 @@ export interface Valuation {
   margin: number
 }
 
-const round50 = (n: number) => Math.round(n / 50) * 50
+export const round50 = (n: number) => Math.round(n / 50) * 50
 
 export function calcValuation(
   vehicle: Vehicle,
@@ -199,6 +199,196 @@ export interface SavedValuation {
   date: string
   options: string[]
   note?: string
+}
+
+/* ── Benchmark / comparable-cars ──────────────────────────────────────── */
+
+/** Normalized input both entry points (valuation result + saved) build. */
+export interface BenchmarkSubject {
+  make: string
+  model: string
+  variant: string
+  year: number
+  plate: string
+  mileage: number
+  options: string[]
+  /** Our market value (vraagprijs equivalent) */
+  price: number
+  /** Our recommended purchase (bruto inkoop) */
+  gross: number
+}
+
+export interface Dealer {
+  name: string
+  website: string
+}
+
+export interface BenchmarkListing {
+  id: string
+  make: string
+  model: string
+  variant: string
+  year: number
+  mileage: number
+  options: string[]
+  /** Vraagprijs — what it's listed at */
+  price: number
+  /** Bruto inkoop — what we'd buy at */
+  gross: number
+  /** Marketability index, 5 = hottest in the market */
+  etr: 1 | 2 | 3 | 4 | 5
+  /** Confidence in the ETR score, 0–100 */
+  apr: number
+  trend: 'up' | 'down' | 'flat'
+  daysListed: number
+  /** The dealer offering this car (null for our own car) */
+  dealer: Dealer | null
+  isOurs: boolean
+}
+
+export interface OptionDiff {
+  /** Present in both our car and the listing */
+  shared: string[]
+  /** The listing has these, our car does not */
+  extra: string[]
+  /** Our car has these, the listing does not */
+  missing: string[]
+}
+
+export function optionDiff(ourOptions: string[], listingOptions: string[]): OptionDiff {
+  const ours = new Set(ourOptions)
+  const theirs = new Set(listingOptions)
+  return {
+    shared: ourOptions.filter((id) => theirs.has(id)),
+    extra: listingOptions.filter((id) => !ours.has(id)),
+    missing: ourOptions.filter((id) => !theirs.has(id)),
+  }
+}
+
+/* Deterministic pseudo-randomness — we avoid Math.random so the same car's
+   benchmark shows an identical list every time it's opened. */
+function hashStr(s: string): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+function seeded(seed: number): () => number {
+  let a = seed >>> 0
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+const VARIANT_SUFFIX = ['Comfort', 'Executive', 'Style', 'Business', 'Sport', 'Edition', 'Luxury']
+
+const DEALERS: Dealer[] = [
+  { name: 'Autobedrijf Van Dijk', website: 'vandijkauto.nl' },
+  { name: 'Garage Hoekstra', website: 'garagehoekstra.nl' },
+  { name: 'AutoCentrum Noord', website: 'autocentrumnoord.nl' },
+  { name: "Janssen Auto's", website: 'janssenautos.nl' },
+  { name: 'De Wit Automotive', website: 'dewitautomotive.nl' },
+  { name: 'Autopark Zuid', website: 'autoparkzuid.nl' },
+  { name: 'Het Autohuis', website: 'hetautohuis.nl' },
+  { name: 'Car Company Utrecht', website: 'carcompanyutrecht.nl' },
+]
+
+/**
+ * Build a believable benchmark: ~12–14 comparable listings plus our car,
+ * sorted by buy-priority (ETR desc → APR desc → price asc). Fully deterministic
+ * — seeded from the subject's plate so re-opening shows identical data.
+ */
+export function benchmarkFor(
+  subject: BenchmarkSubject,
+): { listings: BenchmarkListing[]; ourRank: number; total: number } {
+  const seed0 = hashStr(subject.plate || `${subject.make} ${subject.model}`)
+  const rand = seeded(seed0)
+  const count = 11 + Math.floor(rand() * 4) // 11–14 comparables
+
+  // Score a listing into an ETR 1–5: cheaper + better-specced + lower mileage
+  // relative to our car reads as hotter in the market.
+  const etrFor = (price: number, mileage: number, optCount: number): 1 | 2 | 3 | 4 | 5 => {
+    const priceScore = (subject.price - price) / Math.max(1, subject.price) // cheaper → +
+    const mileScore = (subject.mileage - mileage) / Math.max(1, subject.mileage) // fewer km → +
+    const optScore = (optCount - subject.options.length) / 6
+    const raw = 3 + priceScore * 4 + mileScore * 2 + optScore
+    return Math.max(1, Math.min(5, Math.round(raw))) as 1 | 2 | 3 | 4 | 5
+  }
+
+  const comparables: BenchmarkListing[] = Array.from({ length: count }, (_, i) => {
+    const r = seeded(seed0 ^ Math.imul(i + 1, 0x9e3779b1))
+    const priceFactor = 0.82 + r() * 0.36 // 0.82 … 1.18
+    const price = Math.max(1000, round50(subject.price * priceFactor))
+    const gross = round50(price * (0.8 + r() * 0.08)) // 0.80 … 0.88
+    const mileage = Math.max(1000, round50(subject.mileage * (0.7 + r() * 0.8)))
+    const year = subject.year + (Math.floor(r() * 5) - 2) // ±2
+
+    // Start from our options, then deterministically drop/add a few so each row
+    // produces a real diff against our spec.
+    const opts = new Set(subject.options)
+    const churn = Math.floor(r() * 4) // 0–3 changes
+    for (let k = 0; k < churn; k++) {
+      const pick = options[Math.floor(r() * options.length)]
+      if (opts.has(pick.id)) opts.delete(pick.id)
+      else opts.add(pick.id)
+    }
+    const optionIds = options.map((o) => o.id).filter((id) => opts.has(id))
+
+    const etr = etrFor(price, mileage, optionIds.length)
+    const apr = 60 + Math.floor(r() * 37) // 60–96
+    const trend: BenchmarkListing['trend'] = r() < 0.34 ? 'down' : r() < 0.67 ? 'flat' : 'up'
+
+    return {
+      id: `b${i}`,
+      make: subject.make,
+      model: subject.model,
+      variant: `${subject.variant.split(' ').slice(0, 2).join(' ')} ${
+        VARIANT_SUFFIX[Math.floor(r() * VARIANT_SUFFIX.length)]
+      }`,
+      year,
+      mileage,
+      options: optionIds,
+      price,
+      gross,
+      etr,
+      apr,
+      trend,
+      daysListed: 3 + Math.floor(r() * 68),
+      dealer: DEALERS[Math.floor(r() * DEALERS.length)],
+      isOurs: false,
+    }
+  })
+
+  const ours: BenchmarkListing = {
+    id: 'ours',
+    make: subject.make,
+    model: subject.model,
+    variant: subject.variant,
+    year: subject.year,
+    mileage: subject.mileage,
+    options: subject.options,
+    price: subject.price,
+    gross: subject.gross,
+    // Our own valuation: mid-pack marketability, high confidence.
+    etr: etrFor(subject.price, subject.mileage, subject.options.length),
+    apr: 90,
+    trend: 'flat',
+    daysListed: 0,
+    dealer: null,
+    isOurs: true,
+  }
+
+  const listings = [...comparables, ours].sort(
+    (a, b) => b.etr - a.etr || b.apr - a.apr || a.price - b.price,
+  )
+  const ourRank = listings.findIndex((l) => l.isOurs) + 1
+  return { listings, ourRank, total: listings.length }
 }
 
 export const initialSaved: SavedValuation[] = [

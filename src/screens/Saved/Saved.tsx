@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search, Plus, StickyNote, ChevronDown } from 'lucide-react'
+import { Search, Plus, StickyNote, ChevronDown, BarChart3 } from 'lucide-react'
 import BrandMark from '../../components/BrandMark'
 import { useReview } from '../../review/ReviewContext'
-import { eur, km as fmtKm, optionById, type SavedValuation } from '../../data/mock'
+import {
+  eur,
+  km as fmtKm,
+  optionById,
+  benchmarkFor,
+  type SavedValuation,
+  type BenchmarkSubject,
+} from '../../data/mock'
 import './Saved.css'
 
 export default function Saved({
   items,
   onNew,
+  openBenchmark,
 }: {
   items: SavedValuation[]
   onNew: () => void
+  openBenchmark: (subject: BenchmarkSubject) => void
 }) {
   const { setCurrentShot } = useReview()
   const [q, setQ] = useState('')
@@ -51,6 +60,19 @@ export default function Saved({
       <div className="saved__list">
         {filtered.map((it) => {
           const open = openId === it.id
+          const subject: BenchmarkSubject = {
+            make: it.make,
+            model: it.model,
+            variant: it.variant,
+            year: it.year,
+            plate: it.plate === '—' ? '' : it.plate,
+            mileage: it.mileage,
+            options: it.options,
+            price: it.price,
+            gross: it.gross,
+          }
+          const bench = benchmarkFor(subject)
+          const etr = bench.listings.find((l) => l.isOurs)?.etr
           return (
             <article key={it.id} className="svcard">
               <div className="svcard__head">
@@ -83,6 +105,23 @@ export default function Saved({
                   <span className="svcard__price-k">Purchase</span>
                   <span className="svcard__price-v">{eur(it.gross)}</span>
                 </div>
+                <div className="svcard__price">
+                  <span className="svcard__price-k">Margin</span>
+                  <span className="svcard__price-v">{eur(it.price - it.gross)}</span>
+                </div>
+              </div>
+
+              <div className="svcard__badges">
+                <span className="svcard__etr">
+                  ETR <b>{etr}</b>
+                </span>
+                <button
+                  className="svcard__bench"
+                  onClick={() => openBenchmark(subject)}
+                  aria-label="View benchmark"
+                >
+                  <BarChart3 width={14} height={14} /> #{bench.ourRank} of {bench.total}
+                </button>
                 <button
                   className={`opts-pill ${open ? 'is-open' : ''}`}
                   onClick={() => setOpenId(open ? null : it.id)}
