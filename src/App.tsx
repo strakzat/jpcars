@@ -9,6 +9,7 @@ import Benchmark from './screens/Valuation/Benchmark'
 import Detail, { type DetailSubject } from './screens/Valuation/Detail'
 import { ReviewProvider, useReview } from './review/ReviewContext'
 import ReviewControls from './review/ReviewControls'
+import AnnotationLayer from './review/AnnotationLayer'
 import CurrentDesignFrame from './review/CurrentDesignFrame'
 import { useMediaQuery } from './review/useMediaQuery'
 import { initialSaved, type SavedValuation, type BenchmarkSubject } from './data/mock'
@@ -141,6 +142,7 @@ export default function App() {
   return (
     <ReviewProvider>
       <AppShell />
+      <AnnotationLayer />
       <ReviewControls />
     </ReviewProvider>
   )

@@ -1,0 +1,170 @@
+/* Full-viewport overlay; children opt back into pointer events as needed. */
+.annot {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+}
+
+/* ── Connector lines ──────────────────────────────────────────────────── */
+.annot__svg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  overflow: visible;
+}
+.annot__path {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+  opacity: 0.7;
+  animation: annot-fade 0.25s var(--ease);
+}
+
+/* ── Marker dot on the element ────────────────────────────────────────── */
+.annot__marker {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 2px solid #0a0a0b;
+  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  animation: annot-pop 0.25s var(--ease);
+}
+/* In fallback mode the markers are the only handle, so make them tappable. */
+.annot--markers .annot__marker {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+.annot--markers .annot__marker.is-open {
+  background: #fff;
+  box-shadow: 0 0 0 2px var(--accent), 0 4px 14px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Notes column (sits beside the phone; `left` set in JS) ────────────── */
+.annot__col {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  pointer-events: none;
+}
+
+.annot__card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(20, 20, 22, 0.92);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  animation: annot-fade 0.25s var(--ease);
+  will-change: transform;
+}
+/* A small node where the connector line meets the card (its left-centre). */
+.annot__card::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -4px;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(10, 10, 11, 0.9);
+}
+
+.annot__c-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.annot__c-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.annot__c-text {
+  font-size: 12px;
+  line-height: 1.42;
+  color: var(--text-2);
+}
+
+/* ── Fallback panel (narrow layout) ───────────────────────────────────── */
+.annot__panel {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(380px, calc(100vw - 24px));
+  display: flex;
+  gap: 11px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(20, 20, 22, 0.95);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+  animation: annot-up 0.26s var(--ease);
+}
+.annot__panel-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+@keyframes annot-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes annot-pop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes annot-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
