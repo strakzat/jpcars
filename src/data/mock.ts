@@ -154,6 +154,35 @@ export function calcValuation(
   return { base: vehicle.basePrice, mileageAdj, optionsAdj, price, gross, margin }
 }
 
+/**
+ * Reconstruct a valuation breakdown for an already-priced car (a saved
+ * valuation or benchmark subject) where we kept only the final price/gross.
+ * Options and mileage adjustments are recomputed the same way as a live
+ * valuation; the base is back-solved so the rows always sum to the market
+ * value the card was saved with.
+ */
+export function deriveValuation(
+  input: { plate: string; mileage: number; options: string[]; price: number; gross: number },
+): Valuation {
+  const vehicle = lookupVehicle(input.plate)
+  const delta = input.mileage - vehicle.expectedMileage
+  const mileageAdj = round50(
+    -Math.max(-0.05, Math.min(0.06, delta === 0 ? 0 : 0.06 * Math.sign(delta))) * Math.abs(delta),
+  )
+  const optionsAdj = round50(
+    input.options.reduce((sum, id) => sum + (optionById[id]?.value ?? 0), 0),
+  )
+  const base = input.price - mileageAdj - optionsAdj
+  return {
+    base,
+    mileageAdj,
+    optionsAdj,
+    price: input.price,
+    gross: input.gross,
+    margin: input.price - input.gross,
+  }
+}
+
 /** Brand logos shown when no photo of the actual car is available. */
 export const brandLogos: Record<string, string> = {
   MAZDA: '/brands/mazda.png',

@@ -1,0 +1,86 @@
+/* Detail reuses the .bench overlay shell, header and result-card styles.
+   Only the scrollable body and the read-only note need their own rules. */
+
+/* ── Options menu (top-right) ───────────────────────────────────────────── */
+.detail-menu {
+  position: relative;
+}
+.val__back.is-active {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.detail-menu__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: transparent;
+}
+.detail-menu__pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: -4px;
+  z-index: 41;
+  min-width: 188px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  transform-origin: top right;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-raised);
+}
+.detail-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+  transition: background 0.12s ease;
+}
+.detail-menu__item:active {
+  background: var(--surface-3);
+}
+.detail-menu__item--danger {
+  color: var(--negative);
+}
+.detail-menu__sep {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--line);
+}
+
+.detail__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px var(--gutter) calc(var(--tabbar-h) + 28px);
+}
+
+.detail__note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.detail__note-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.detail__note-text {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}

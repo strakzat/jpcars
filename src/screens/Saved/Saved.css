@@ -87,6 +87,12 @@
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.svcard:active {
+  transform: scale(0.99);
+  border-color: var(--line-strong);
 }
 .svcard__head {
   display: flex;
