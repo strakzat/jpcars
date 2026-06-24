@@ -11,6 +11,9 @@ interface ReviewState {
   /** Show the current (live) JP.cars app screenshot next to the proposal */
   compareOn: boolean
   setCompareOn: (v: boolean) => void
+  /** Show the design annotations overlaid on the proposal */
+  annotationsOn: boolean
+  setAnnotationsOn: (v: boolean) => void
   /**
    * Which current-app screenshot to show — updated by each screen so the
    * comparison stays in sync with where you are in the new flow.
@@ -30,10 +33,24 @@ export function ReviewProvider({ children }: { children: ReactNode }) {
   const [compareOn, setCompareOn] = useState(
     typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('compare'),
   )
+  // Annotations are on by default; ?annot=off opens the prototype clean.
+  const [annotationsOn, setAnnotationsOn] = useState(
+    typeof window === 'undefined' ||
+      new URLSearchParams(window.location.search).get('annot') !== 'off',
+  )
   const [currentShot, setCurrentShot] = useState<CurrentShot>(DEFAULT_SHOT)
 
   return (
-    <ReviewCtx.Provider value={{ compareOn, setCompareOn, currentShot, setCurrentShot }}>
+    <ReviewCtx.Provider
+      value={{
+        compareOn,
+        setCompareOn,
+        annotationsOn,
+        setAnnotationsOn,
+        currentShot,
+        setCurrentShot,
+      }}
+    >
       {children}
     </ReviewCtx.Provider>
   )
