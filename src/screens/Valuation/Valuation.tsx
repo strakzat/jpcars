@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import BrandMark from '../../components/BrandMark'
 import CarPhoto from '../../components/CarPhoto'
+import MarketStats from './MarketStats'
 import { useReview } from '../../review/ReviewContext'
 import {
   options as ALL_OPTIONS,
@@ -70,12 +71,14 @@ export default function Valuation({
   goToSaved,
   onFlowChange,
   openBenchmark,
+  openDetail,
 }: {
   recent: SavedValuation[]
   onSaved: (v: SavedValuation) => void
   goToSaved: () => void
   onFlowChange: (inFlow: boolean) => void
   openBenchmark: (subject: BenchmarkSubject) => void
+  openDetail: (it: SavedValuation) => void
 }) {
   const { setCurrentShot } = useReview()
   const [phase, setPhase] = useState<'home' | 'flow'>('home')
@@ -161,6 +164,7 @@ export default function Valuation({
     () => (benchSubject ? benchmarkFor(benchSubject) : null),
     [benchSubject],
   )
+  const ourMarket = benchRank?.listings.find((l) => l.isOurs) ?? null
 
   const reset = () => {
     setPlate('')
@@ -222,7 +226,7 @@ export default function Valuation({
           ) : (
             <div className="vhome__list">
               {recent.slice(0, 5).map((it) => (
-                <button key={it.id} className="recent" onClick={goToSaved}>
+                <button key={it.id} className="recent" onClick={() => openDetail(it)}>
                   <BrandMark make={it.make} model={it.model} size={40} />
                   <span className="recent__info">
                     <span className="recent__name">
@@ -474,6 +478,8 @@ export default function Valuation({
                     </AnimatePresence>
                   </div>
                 </div>
+
+                {ourMarket && <MarketStats etr={ourMarket.etr} apr={ourMarket.apr} />}
 
                 <button
                   className="bench-cta"

@@ -64,8 +64,8 @@
   font-weight: 700;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: var(--bg);
-  background: var(--text);
+  color: var(--accent-ink);
+  background: var(--accent);
   padding: 3px 8px;
   border-radius: 999px;
 }
@@ -191,9 +191,9 @@
   transform: scale(0.985);
 }
 .bench-row.is-ours {
-  border: 1.5px solid var(--line-strong);
+  border: 1.5px solid var(--accent);
   background: var(--surface-2);
-  box-shadow: var(--shadow-raised);
+  box-shadow: var(--shadow-raised), 0 0 0 3px var(--accent-soft);
 }
 .bench-row__you {
   display: inline-flex;
@@ -204,8 +204,8 @@
   font-weight: 700;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: var(--bg);
-  background: var(--text);
+  color: var(--accent-ink);
+  background: var(--accent);
   padding: 3px 8px;
   border-radius: 999px;
 }

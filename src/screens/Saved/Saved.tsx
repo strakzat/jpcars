@@ -17,10 +17,12 @@ export default function Saved({
   items,
   onNew,
   openBenchmark,
+  openDetail,
 }: {
   items: SavedValuation[]
   onNew: () => void
   openBenchmark: (subject: BenchmarkSubject) => void
+  openDetail: (it: SavedValuation) => void
 }) {
   const { setCurrentShot } = useReview()
   const [q, setQ] = useState('')
@@ -74,7 +76,19 @@ export default function Saved({
           const bench = benchmarkFor(subject)
           const etr = bench.listings.find((l) => l.isOurs)?.etr
           return (
-            <article key={it.id} className="svcard">
+            <article
+              key={it.id}
+              className="svcard"
+              role="button"
+              tabIndex={0}
+              onClick={() => openDetail(it)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  openDetail(it)
+                }
+              }}
+            >
               <div className="svcard__head">
                 <BrandMark make={it.make} model={it.model} size={44} />
                 <div className="svcard__id">
@@ -117,14 +131,20 @@ export default function Saved({
                 </span>
                 <button
                   className="svcard__bench"
-                  onClick={() => openBenchmark(subject)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    openBenchmark(subject)
+                  }}
                   aria-label="View benchmark"
                 >
                   <BarChart3 width={14} height={14} /> #{bench.ourRank} of {bench.total}
                 </button>
                 <button
                   className={`opts-pill ${open ? 'is-open' : ''}`}
-                  onClick={() => setOpenId(open ? null : it.id)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenId(open ? null : it.id)
+                  }}
                   aria-expanded={open}
                 >
                   {it.options.length} options

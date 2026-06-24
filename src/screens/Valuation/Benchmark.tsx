@@ -1,8 +1,9 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, Info, MapPin, Flame, Store, ExternalLink } from 'lucide-react'
 import BrandMark from '../../components/BrandMark'
 import CarPhoto from '../../components/CarPhoto'
+import { useReview } from '../../review/ReviewContext'
 import {
   benchmarkFor,
   optionDiff,
@@ -327,7 +328,7 @@ function LegendSheet({ onClose }: { onClose: () => void }) {
         <div>
           <span className="legend__k">APR — confidence</span>
           <p className="legend__p">
-            How reliable that ETR estimate is. The fuller the green bar, the more
+            How reliable that ETR estimate is. The fuller the bar, the more
             certain the score.
           </p>
         </div>
@@ -350,6 +351,16 @@ export default function Benchmark({
   const { listings, ourRank, total } = useMemo(() => benchmarkFor(subject), [subject])
   const [sheetFor, setSheetFor] = useState<BenchmarkListing | null>(null)
   const [legendOpen, setLegendOpen] = useState(false)
+
+  // While the benchmark is open, the side-by-side comparison shows the current
+  // app's comparable-cars screen; restore the previous shot when it closes.
+  const { currentShot, setCurrentShot } = useReview()
+  const prevShot = useRef(currentShot)
+  useEffect(() => {
+    const previous = prevShot.current
+    setCurrentShot({ src: '/current/benchmark.png', label: 'Current — Comparable cars' })
+    return () => setCurrentShot(previous)
+  }, [setCurrentShot])
 
   const ourRowRef = useRef<HTMLButtonElement>(null)
 

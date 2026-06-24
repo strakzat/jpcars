@@ -6,6 +6,7 @@ import Valuation from './screens/Valuation/Valuation'
 import Saved from './screens/Saved/Saved'
 import Settings from './screens/Settings/Settings'
 import Benchmark from './screens/Valuation/Benchmark'
+import Detail, { type DetailSubject } from './screens/Valuation/Detail'
 import { ReviewProvider, useReview } from './review/ReviewContext'
 import ReviewControls from './review/ReviewControls'
 import CurrentDesignFrame from './review/CurrentDesignFrame'
@@ -22,6 +23,23 @@ function AppShell() {
   const [saved, setSaved] = useState<SavedValuation[]>(initialSaved)
   const [inFlow, setInFlow] = useState(false)
   const [benchSubject, setBenchSubject] = useState<BenchmarkSubject | null>(null)
+  const [detailSubject, setDetailSubject] = useState<DetailSubject | null>(null)
+
+  const openDetail = (it: SavedValuation) =>
+    setDetailSubject({
+      make: it.make,
+      model: it.model,
+      variant: it.variant,
+      year: it.year,
+      fuel: it.fuel,
+      plate: it.plate === '—' ? '' : it.plate,
+      mileage: it.mileage,
+      options: it.options,
+      price: it.price,
+      gross: it.gross,
+      note: it.note,
+      date: it.date,
+    })
   const { compareOn } = useReview()
   const wide = useMediaQuery('(min-width: 1024px)')
 
@@ -62,6 +80,7 @@ function AppShell() {
                       goToSaved={() => changeTab('saved')}
                       onFlowChange={setInFlow}
                       openBenchmark={setBenchSubject}
+                      openDetail={openDetail}
                     />
                   )}
                   {tab === 'saved' && (
@@ -69,6 +88,7 @@ function AppShell() {
                       items={saved}
                       onNew={() => changeTab('valuation')}
                       openBenchmark={setBenchSubject}
+                      openDetail={openDetail}
                     />
                   )}
                   {tab === 'settings' && <Settings />}
@@ -76,6 +96,16 @@ function AppShell() {
               </AnimatePresence>
 
               <GlassTabBar active={tab} onChange={changeTab} hidden={inFlow} />
+
+              <AnimatePresence>
+                {detailSubject && (
+                  <Detail
+                    subject={detailSubject}
+                    onClose={() => setDetailSubject(null)}
+                    openBenchmark={setBenchSubject}
+                  />
+                )}
+              </AnimatePresence>
 
               <AnimatePresence>
                 {benchSubject && (
