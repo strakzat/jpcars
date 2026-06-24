@@ -136,9 +136,56 @@
   color: var(--text-2);
 }
 
+.svcard__badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.svcard__badges .opts-pill {
+  margin-left: auto;
+}
+.svcard__bench {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 999px;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.svcard__bench:active {
+  transform: scale(0.96);
+  border-color: var(--line-strong);
+}
+.svcard__bench svg {
+  color: var(--text-3);
+}
+.svcard__etr {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.svcard__etr b {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .opts-pill {
   flex: none;
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -191,7 +238,8 @@
 .svcard__prices {
   display: flex;
   align-items: center;
-  gap: 28px;
+  flex-wrap: wrap;
+  gap: 14px 24px;
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
@@ -211,7 +259,7 @@
   white-space: nowrap;
 }
 .svcard__price--gross .svcard__price-v {
-  color: var(--accent);
+  color: var(--text);
 }
 
 .svcard__note {

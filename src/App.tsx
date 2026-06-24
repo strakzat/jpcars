@@ -5,11 +5,12 @@ import GlassTabBar, { type TabId } from './components/GlassTabBar'
 import Valuation from './screens/Valuation/Valuation'
 import Saved from './screens/Saved/Saved'
 import Settings from './screens/Settings/Settings'
+import Benchmark from './screens/Valuation/Benchmark'
 import { ReviewProvider, useReview } from './review/ReviewContext'
 import ReviewControls from './review/ReviewControls'
 import CurrentDesignFrame from './review/CurrentDesignFrame'
 import { useMediaQuery } from './review/useMediaQuery'
-import { initialSaved, type SavedValuation } from './data/mock'
+import { initialSaved, type SavedValuation, type BenchmarkSubject } from './data/mock'
 import './App.css'
 
 function AppShell() {
@@ -20,6 +21,7 @@ function AppShell() {
   )
   const [saved, setSaved] = useState<SavedValuation[]>(initialSaved)
   const [inFlow, setInFlow] = useState(false)
+  const [benchSubject, setBenchSubject] = useState<BenchmarkSubject | null>(null)
   const { compareOn } = useReview()
   const wide = useMediaQuery('(min-width: 1024px)')
 
@@ -59,14 +61,27 @@ function AppShell() {
                       onSaved={addSaved}
                       goToSaved={() => changeTab('saved')}
                       onFlowChange={setInFlow}
+                      openBenchmark={setBenchSubject}
                     />
                   )}
-                  {tab === 'saved' && <Saved items={saved} onNew={() => changeTab('valuation')} />}
+                  {tab === 'saved' && (
+                    <Saved
+                      items={saved}
+                      onNew={() => changeTab('valuation')}
+                      openBenchmark={setBenchSubject}
+                    />
+                  )}
                   {tab === 'settings' && <Settings />}
                 </motion.div>
               </AnimatePresence>
 
               <GlassTabBar active={tab} onChange={changeTab} hidden={inFlow} />
+
+              <AnimatePresence>
+                {benchSubject && (
+                  <Benchmark subject={benchSubject} onClose={() => setBenchSubject(null)} />
+                )}
+              </AnimatePresence>
             </div>
           </DeviceFrame>
 
