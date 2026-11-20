@@ -1,0 +1,87 @@
+name: CI
+
+# Pull requests only, and once per pull request unless asked for more. GitHub
+# Free includes 2,000 minutes a month, shared by every private repository of
+# the account or organisation, and one portfolio spent a month's worth in
+# days: a run on every push to a pull request and again on every push to
+# `main`. Every Claude session runs ./scripts/verify.sh before it calls a
+# change done and before it pushes, so a run here is a second opinion from a
+# clean Linux machine, and once per pull request is enough of one.
+#
+# - `verify` runs by itself when a pull request opens, reopens or leaves
+#   draft: about three minutes. One opened as a draft waits until it is
+#   ready, so it still runs once.
+# - The `ci` label asks for more. Adding it runs `verify` again, and so
+#   does every later push while the label is on:
+#
+#     gh pr edit <number> --add-label ci
+#
+# - A push to `main` runs nothing here. The full run, every browser engine
+#   included, happens once in deploy.yml, right before production moves,
+#   which is the only moment it gates anything.
+#
+# A job that skips takes no runner and bills nothing. A required check that
+# skipped counts as passed, so between the first run and the merge the gate
+# is the local ./scripts/verify.sh.
+#
+# A red check with zero steps is GitHub billing, not this repository: with the
+# minutes spent or a payment failed, GitHub does not start the job at all, and
+# nothing in this file can say why. Count the steps before reading red as a
+# regression:
+#
+#   gh run view <run-id> --json jobs --jq '.jobs[] | "\(.name): \(.conclusion), \(.steps | length) steps"'
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize, labeled]
+
+# A superseded run bills for a result nobody will read. A run that will skip
+# gets a group of its own (its run id), so adding some other label cancels
+# nothing. The condition is the same as verify's `if` below.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ ((contains(fromJSON('["opened","reopened"]'), github.event.action) && !github.event.pull_request.draft) || github.event.action == 'ready_for_review' || (contains(github.event.pull_request.labels.*.name, 'ci') && (github.event.action != 'labeled' || github.event.label.name == 'ci'))) && 'run' || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: (contains(fromJSON('["opened","reopened"]'), github.event.action) && !github.event.pull_request.draft) || github.event.action == 'ready_for_review' || (contains(github.event.pull_request.labels.*.name, 'ci') && (github.event.action != 'labeled' || github.event.label.name == 'ci'))
+    runs-on: ubuntu-latest
+    # Without this, a hung job bills against the six-hour default.
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          # Read from .nvmrc, so CI cannot drift from the version the project
+          # pins for local work and for Vercel's build.
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Installing is setup, not a check, so it stays here and out of
+      # verify.sh. @strakzat/eslint-config-ui is public on npm: no token.
+      - run: npm ci
+
+      # gitleaks is not on the ubuntu image. Without it verify.sh reports the
+      # secrets stage as skipped and exits 2, which GitHub shows as a failure
+      # for a reason that has nothing to do with the change. Installing rather
+      # than accepting a 2: a workflow that swallows the skip goes green
+      # forever with nothing scanned. Pinned: an unpinned scanner changes what
+      # it finds between two runs of the same commit.
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+
+      # The gate is the project's own verify.sh, the same command as on a
+      # laptop, so the two cannot become lists that drift.
+      - run: ./scripts/verify.sh
+
+      # Not in verify.sh: it needs the registry, and a laptop's run should not.
+      # Production dependencies stay clean; dev-only advisories do not block.
+      - run: npm audit --omit=dev --audit-level=high
+

@@ -1,0 +1,308 @@
+name: Deploy
+
+# Production is the `production` branch, Vercel's Production Branch. This
+# moves it to `main` as a fast-forward, only when `main` has moved: every day
+# at 20:00 in Amsterdam, and on request ("zet het live"):
+#
+#   gh workflow run deploy.yml --ref main
+#
+# A merge to `main` deploys nothing.
+#
+# Before it moves, the gate runs verify.sh, the production audit and the
+# end-to-end tests on every engine against the exact commit that will go live.
+# ci.yml does not run on `main`, so this is the one place two pull requests
+# that pass apart and break together are caught. A red run leaves
+# `production` where it was. On request that makes a deploy about fifteen
+# minutes instead of seconds; that is the price of one full run per deploy
+# instead of one per push.
+#
+# A red run with zero steps is GitHub billing, as ci.yml explains: then
+# nothing moved, and nothing went live.
+#
+# No secret to set up: production moves with the token GitHub mints for
+# each run. That token may not move a branch over a change to
+# .github/workflows, nor create one, so in two cases a person finishes the
+# deploy: the first time, and whenever a workflow file changed since the
+# last one. The
+# daily run then stops before the gate and says so; a run on request still
+# tests, tries the move anyway (and says so when GitHub allows it), and
+# otherwise names the one command that moves production to the tested commit
+# from a laptop, with that person's own GitHub sign-in:
+#
+#   git fetch origin && git push origin <commit>:refs/heads/production
+#
+# A plain push, never a forced one: GitHub refuses it unless it is a
+# fast-forward.
+on:
+  workflow_dispatch:
+  schedule:
+    # 20:00 in Amsterdam is 18:00 UTC in summer and 19:00 in winter. Both
+    # fire; the first step lets through the one that is 20:00 there.
+    - cron: "0 18 * * *"
+    - cron: "0 19 * * *"
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  # Decides whether there is a deploy at all, before anything costly starts,
+  # and pins the commit: `main` may move while the gate runs, and what goes
+  # live is what was tested, not what `main` is by then.
+  plan:
+    # Only main's copy of this file may deploy. `workflow_dispatch` runs the
+    # file of whatever ref it is given, and a branch cut before this gate
+    # existed carries a deploy.yml without it.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      go: ${{ steps.refs.outputs.go }}
+      main: ${{ steps.refs.outputs.main }}
+      prod: ${{ steps.refs.outputs.prod }}
+      by_hand: ${{ steps.refs.outputs.by_hand }}
+    steps:
+      - name: Check it is 20:00 in Amsterdam
+        id: when
+        env:
+          EVENT: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
+        run: |
+          if [ "$EVENT" != "schedule" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          # Judged by the schedule that fired, not the clock: a run GitHub
+          # starts late still counts for its own hour.
+          if [ "$(TZ=Europe/Amsterdam date +%z)" = "+0200" ]; then want="0 18 * * *"; else want="0 19 * * *"; fi
+          if [ "$CRON" = "$want" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "go=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Compare main with production
+        id: refs
+        if: steps.when.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          main=$(gh api "repos/$REPO/git/ref/heads/main" --jq .object.sha)
+
+          # A missing branch is a 404, the first run. Anything else (a rate
+          # limit, a bad token, GitHub down) stops the run here.
+          if prod=$(gh api "repos/$REPO/git/ref/heads/production" --jq .object.sha 2> /tmp/prod.err); then
+              :
+          elif grep -q "HTTP 404" /tmp/prod.err; then
+              prod=""
+          else
+              cat /tmp/prod.err >&2
+              exit 1
+          fi
+
+          if [ "$main" = "$prod" ]; then
+              echo "Production is up to date with main: nothing to test or deploy." | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "go=false" >> "$GITHUB_OUTPUT"
+              exit 0
+          fi
+
+          # A production with a commit of its own cannot be fast-forwarded;
+          # say so now rather than after the gate.
+          if [ -n "$prod" ]; then
+              status=$(gh api "repos/$REPO/compare/$prod...$main" --jq .status)
+              if [ "$status" != "ahead" ]; then
+                  echo "::error::production is $status of main, not behind it: it cannot be fast-forwarded. Look at what landed on production alone."
+                  exit 1
+              fi
+          fi
+
+          # The run's own token cannot move production over a change to
+          # .github/workflows, and a new production carries every workflow
+          # file there is, so a person creates it too. Compared as the
+          # folder's tree id at both commits: one call each, whatever the
+          # size of the deploy.
+          by_hand=false
+          if [ -z "$prod" ]; then
+              by_hand=true
+          else
+              wf_main=$(gh api "repos/$REPO/contents/.github?ref=$main" --jq '.[] | select(.name == "workflows") | .sha')
+              # A production older than .github answers 404, which counts as
+              # changed. Any other error stops the run, as above.
+              if wf_prod=$(gh api "repos/$REPO/contents/.github?ref=$prod" --jq '.[] | select(.name == "workflows") | .sha' 2> /tmp/wf.err); then
+                  :
+              elif grep -q "HTTP 404" /tmp/wf.err; then
+                  wf_prod=""
+              else
+                  cat /tmp/wf.err >&2
+                  exit 1
+              fi
+              if [ "$wf_main" != "$wf_prod" ]; then by_hand=true; fi
+          fi
+
+          # The daily run cannot finish such a deploy, so it does not spend
+          # the gate on one. Red, so the scheduled run's failure mail reaches
+          # someone: production waits for a person until then.
+          if [ "$by_hand" = "true" ] && [ "$EVENT" = "schedule" ]; then
+              if [ -z "$prod" ]; then why="production does not exist yet"; else why="a file in .github/workflows changed since the last deploy"; fi
+              echo "::error::Not deployed: $why, and the run's own token may not move production over that. Run it once on request (gh workflow run deploy.yml --ref main, or \"zet het live\"); it tests main and names the command that finishes it."
+              exit 1
+          fi
+
+          # The daily run does not spend the gate again on a commit an earlier
+          # run already settled; that would be the same result for the same
+          # minutes. Two outcomes settle it: one of the gate's three checks
+          # failed (the commit is broken), or the gate passed and `deploy` did
+          # not move production (it named the push that does, and waits for
+          # it). A setup step that failed (npm ci, the gitleaks download, a
+          # browser install: mostly the network) settles nothing, nor does a
+          # job with zero steps (minutes or billing), so the next daily run
+          # tests again. A run on request ("zet het live") always tests. An
+          # API error here stops the run: the list is read into a variable
+          # first.
+          if [ "$EVENT" = "schedule" ]; then
+              ids=$(gh run list --repo "$REPO" --workflow deploy.yml --commit "$main" --status failure --limit 100 --json databaseId --jq '.[].databaseId')
+              for id in $ids; do
+                  verdict=$(gh run view "$id" --repo "$REPO" --json jobs --jq '
+                      [.jobs[] | select((.steps | length) > 0)] as $ran
+                      | if any($ran[] | select(.name == "gate") | .steps[];
+                               .conclusion == "failure"
+                               and (.name == "verify.sh" or .name == "Production audit" or .name == "End-to-end tests")) then "gate"
+                        elif any($ran[]; .name == "gate" and .conclusion == "success")
+                         and any($ran[]; .name == "deploy" and .conclusion == "failure") then "deploy"
+                        else "" end')
+                  if [ "$verdict" = "gate" ]; then
+                      echo "main ($main) already failed this gate in run $id; not testing it again until main moves or a run is asked for." | tee -a "$GITHUB_STEP_SUMMARY"
+                      echo "go=false" >> "$GITHUB_OUTPUT"
+                      exit 0
+                  fi
+                  if [ "$verdict" = "deploy" ]; then
+                      echo "::error::Not deployed: main ($main) passed the gate in run $id, but production did not move there. That run's summary (gh run view $id) names the push that finishes it; the daily run stays red on this commit until then."
+                      exit 1
+                  fi
+              done
+          fi
+
+          {
+              echo "go=true"
+              echo "main=$main"
+              echo "prod=$prod"
+              echo "by_hand=$by_hand"
+          } >> "$GITHUB_OUTPUT"
+
+  gate:
+    needs: plan
+    if: needs.plan.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.plan.outputs.main }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # gitleaks as in ci.yml, pinned for the same reason.
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+      # The three checks carry names: `plan` reads them to tell a broken
+      # commit from a setup step that failed on the network. Keep the names.
+      - name: verify.sh
+        run: ./scripts/verify.sh
+      - name: Production audit
+        run: npm audit --omit=dev --audit-level=high
+
+  deploy:
+    needs: [plan, gate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Writing a branch is all this job does. A change to .github/workflows
+    # would also need the `workflows` permission, which this token cannot
+    # be given; `plan` sends those to a person instead.
+    permissions:
+      contents: write
+    steps:
+      - name: Fast-forward production to the tested commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MAIN: ${{ needs.plan.outputs.main }}
+          PROD: ${{ needs.plan.outputs.prod }}
+          BY_HAND: ${{ needs.plan.outputs.by_hand }}
+        run: |
+          # Red although the gate passed: red means nothing moved, and
+          # nothing has, until someone runs the command it names.
+          by_hand() {
+              {
+                  echo "### Tested, not yet live"
+                  echo
+                  echo "The gate passed at \`$MAIN\`. $1. One push from a laptop finishes this deploy:"
+                  echo
+                  echo "    git fetch origin && git push origin $MAIN:refs/heads/production"
+                  echo
+                  echo "A plain push: GitHub refuses it unless it is a fast-forward. Then set production as the Production Branch in Vercel, if it is not yet."
+              } >> "$GITHUB_STEP_SUMMARY"
+              echo "::error::Tested, not yet live: the gate passed at $MAIN. Finish it from a laptop: git fetch origin && git push origin $MAIN:refs/heads/production"
+              exit 1
+          }
+
+          # `plan` predicted a refusal (by_hand) when production is missing
+          # or a workflow file changed. The move is tried anyway: a refusal
+          # costs nothing, and a move GitHub allows proves the prediction
+          # wrong, which the summary then says.
+          predicted() {
+              if [ "$BY_HAND" = "true" ]; then
+                  echo
+                  echo "\`plan\` expected GitHub to refuse the run's own token here, and it did not. Worth telling Meridian: the daily run may be able to finish this kind of deploy itself."
+              fi
+          }
+
+          if [ -z "$PROD" ]; then
+              if ! gh api "repos/$REPO/git/refs" -f ref=refs/heads/production -f sha="$MAIN" > /dev/null 2> /tmp/move.err; then
+                  cat /tmp/move.err >&2
+                  by_hand "Production does not exist yet, and GitHub refused the run's own token to create it"
+              fi
+              {
+                  echo "### Created \`production\`"
+                  echo
+                  echo "At main (\`$MAIN\`), after the gate. Set it as the Production Branch in Vercel's project settings, if it is not yet."
+                  predicted
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+          fi
+
+          # The list first: once production has moved, nothing may turn the
+          # run red.
+          changes=$(gh api "repos/$REPO/compare/$PROD...$MAIN" --jq '.commits[] | "- " + (.commit.message | split("\n")[0])') \
+              || changes="(the list of changes could not be read)"
+
+          # force=false: GitHub refuses anything but a fast-forward, so a
+          # commit that landed on production alone is never thrown away. Any
+          # other refusal (a workflow change, a rule on `production`) goes to
+          # a person; not a fast-forward is the one a push cannot fix.
+          if ! gh api -X PATCH "repos/$REPO/git/refs/heads/production" -f sha="$MAIN" -F force=false > /dev/null 2> /tmp/move.err; then
+              cat /tmp/move.err >&2
+              if grep -qi "fast forward" /tmp/move.err; then
+                  echo "::error::production is not behind main: it cannot be fast-forwarded. Look at what landed on production alone."
+                  exit 1
+              fi
+              if [ "$BY_HAND" = "true" ]; then
+                  by_hand "A file in .github/workflows changed since the last deploy, and GitHub refused the run's own token to move production over it"
+              fi
+              by_hand "GitHub refused the run's own token to move production"
+          fi
+
+          {
+              echo "### Sent to Vercel"
+              echo
+              echo "$changes"
+              echo
+              echo "Gated at \`$MAIN\`. Vercel builds production from \`production\` now; its Deployments page says when it is live."
+              predicted
+          } >> "$GITHUB_STEP_SUMMARY"
